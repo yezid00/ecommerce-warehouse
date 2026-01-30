@@ -172,20 +172,97 @@ def group_sales_by_year_and_month():
 # Customer Analytics
 def get_customer_details():
     """Get top customers name,city and country"""
+    conn = get_connection()
+    if not conn:
+        return None
+
+    try:
+        cursor = conn.cursor()
+
+        query = """SELECT customer_name,city,country, SUM(total_amount)
+FROM dim_customer JOIN fact_sales USING(customer_id)
+GROUP BY customer_name,city,country
+ORDER BY SUM(total_amount) DESC
+LIMIT 10;"""
+
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        print("Top customer details")
+        print(f"{'Name':<25} {'City':<20} {'City':<20} {'# Country':<10}")
+
+        for row in result:
+            print(f"{row[0]:<25} {row[1]:<20} {row[2]:<20} {row[3]:<10}")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def get_total_amount_spend():
     """Get total amount spent"""
+    conn = get_connection()
+    if not conn:
+        return None
+
+    try:
+        cursor = conn.cursor()
+
+        query = """SELECT customer_name, SUM(total_amount)
+        FROM dim_customer JOIN fact_sales USING(customer_id)
+        GROUP BY customer_name
+        ORDER BY SUM(total_amount) DESC
+        LIMIT 10;"""
+
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        print("Top customer details")
+        print(f"{'Name':<25} {'Total amount':<20}")
+
+        for row in result:
+            print(f"{row[0]:<25} {row[1]:<20}")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def get_number_of_purchases():
     """Get top customers number of purchases"""
+    conn = get_connection()
+    if not conn:
+        return None
+
+    try:
+        cursor = conn.cursor()
+
+        query = """SELECT customer_name,COUNT(sale_id) FROM dim_customer
+        JOIN fact_sales USING(customer_id)
+        GROUP BY customer_name
+        ORDER BY COUNT(sale_id) DESC
+        LIMIT 10;
+        """
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        print("Number of purchases")
+        for row in result:
+            print(row)
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        cursor.close()
+        conn.close()
 
 
 if __name__ == "__main__":
     # get_total_revenue_per_product_category()
     # get_number_of_sales_per_category()
     # get_total_items_sold_per_category()
-    get_revenue_by_month()
-    get_number_of_transactions_per_month()
-    group_sales_by_year_and_month()
+    # get_revenue_by_month()
+    # get_number_of_transactions_per_month()
+    # group_sales_by_year_and_month()
+    get_customer_details()
